@@ -7,12 +7,20 @@
     android:layout_height="match_parent"
     android:orientation="vertical">
 
+    <EditText
+        android:id="@+id/editText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:ems="10"
+        android:inputType="textPersonName"
+        android:text="Eon IP Address" />
+
     <Button
         android:id="@+id/button3"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:onClick="runCommand"
-        android:text="Button" />
+        android:onClick="deleteButton"
+        android:text="Delete Drives" />
 
     <Button
         android:id="@+id/button4"

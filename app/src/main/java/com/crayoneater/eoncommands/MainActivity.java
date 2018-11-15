@@ -19,6 +19,7 @@ import android.os.Bundle;
 import android.app.Activity;
 import android.util.Log;
 import android.view.View;
+import android.widget.EditText;
 
 public class MainActivity extends Activity {
 
@@ -29,7 +30,7 @@ public class MainActivity extends Activity {
 
     }
 
-    public String executeRemoteCommand(String username, String hostname, int port)
+    public void executeDeleteCommand(String username, String hostname, int port)
     {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         try {
@@ -52,7 +53,7 @@ public class MainActivity extends Activity {
             channelssh.setOutputStream(baos);
 
             // Execute command
-            channelssh.setCommand("cd /data/openpilot/; ls");
+            channelssh.setCommand("rm -Rf /data/media/0/realdata/*");
             channelssh.connect();
             ///////////////////////////
             byte[] buffer = new byte[1024];
@@ -90,7 +91,7 @@ public class MainActivity extends Activity {
         }catch (Exception ee) {
             Log.e("Error connecting.",ee.toString());
         }
-        return baos.toString();
+        //return baos.toString();
     }
     private String getKey()
     {
@@ -124,13 +125,16 @@ public class MainActivity extends Activity {
     }
 
     @SuppressLint("StaticFieldLeak")
-    public void runCommand(View v)
+    public void deleteButton(View v)
     {
+        EditText ipText = (EditText) findViewById(R.id.editText);
+        final String ip = ipText.getText().toString();
+        Log.e("IP",ip);
         new AsyncTask<Integer, Void, Void>() {
             @Override
             protected Void doInBackground(Integer... params) {
                 try {
-                    executeRemoteCommand("root", "192.168.86.30", 8022);
+                    executeDeleteCommand("root", ip, 8022);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }

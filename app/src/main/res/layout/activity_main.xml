@@ -7,13 +7,18 @@
     android:layout_height="match_parent"
     android:orientation="vertical">
 
+    <TextView
+        android:id="@+id/textView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Eon IP Address:" />
+
     <EditText
         android:id="@+id/editText"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:ems="10"
-        android:inputType="textPersonName"
-        android:text="Eon IP Address" />
+        android:inputType="textPersonName" />
 
     <Button
         android:id="@+id/button3"
@@ -26,5 +31,13 @@
         android:id="@+id/button4"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Button" />
+        android:onClick="pullButton"
+        android:text="Update & Reboot" />
+
+    <Button
+        android:id="@+id/button"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:onClick="settingsButton"
+        android:text="Open Adroid Settings" />
 </LinearLayout>

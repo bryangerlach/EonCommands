@@ -27,72 +27,8 @@ public class MainActivity extends Activity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
     }
 
-    public void executeDeleteCommand(String username, String hostname, int port)
-    {
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        try {
-            JSch jsch = new JSch();
-            jsch.addIdentity(getKey());
-            Session session = jsch.getSession(username, hostname, port);
-            //session.setPassword(password);
-
-            // Avoid asking for key confirmation
-            Properties prop = new Properties();
-            prop.put("StrictHostKeyChecking", "no");
-            session.setConfig(prop);
-
-            session.connect();
-
-            // SSH Channel
-            ChannelExec channelssh = (ChannelExec)
-                    session.openChannel("exec");
-
-            channelssh.setOutputStream(baos);
-
-            // Execute command
-            channelssh.setCommand("rm -Rf /data/media/0/realdata/*");
-            channelssh.connect();
-            ///////////////////////////
-            byte[] buffer = new byte[1024];
-
-            try {
-                InputStream in = channelssh.getInputStream();
-                String line = "";
-                while (true) {
-                    while (in.available() > 0) {
-                        int i = in.read(buffer, 0, 1024);
-                        if (i < 0) {
-                            break;
-                        }
-                        line = new String(buffer, 0, i);
-                        Log.e("results: ", line);
-                    }
-
-                    if (line.contains("logout")) {
-                        break;
-                    }
-
-                    if (channelssh.isClosed()) {
-                        break;
-                    }
-                    try {
-                        Thread.sleep(1000);
-                    } catch (Exception ee) {
-                    }
-                }
-            } catch (Exception e) {
-                System.out.println("Error while reading channel output: " + e);
-            }
-            ////////////////////////////////
-            channelssh.disconnect();
-        }catch (Exception ee) {
-            Log.e("Error connecting.",ee.toString());
-        }
-        //return baos.toString();
-    }
     private String getKey()
     {
         String fileName = "op_rsa";
@@ -124,8 +60,26 @@ public class MainActivity extends Activity {
         return file.toString();
     }
 
-    @SuppressLint("StaticFieldLeak")
     public void deleteButton(View v)
+    {
+        String command = "rm -rf /data/media/0/realdata";
+        prepareCommand(command);
+    }
+
+    public void pullButton(View v)
+    {
+        String command = "cd /data/openpilot; git pull; reboot";
+        prepareCommand(command);
+    }
+
+    public void settingsButton(View v)
+    {
+        String command = "am start -a android.settings.SETTINGS";
+        prepareCommand(command);
+    }
+
+    @SuppressLint("StaticFieldLeak")
+    public void prepareCommand(final String command)
     {
         EditText ipText = (EditText) findViewById(R.id.editText);
         final String ip = ipText.getText().toString();
@@ -134,13 +88,66 @@ public class MainActivity extends Activity {
             @Override
             protected Void doInBackground(Integer... params) {
                 try {
-                    executeDeleteCommand("root", ip, 8022);
+                    executeCommand("root", ip, 8022, command);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
                 return null;
             }
         }.execute(1);
+    }
+
+    public void executeCommand(String username, String hostname, int port, String command)
+    {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        try {
+            JSch jsch = new JSch();
+            jsch.addIdentity(getKey());
+            Session session = jsch.getSession(username, hostname, port);
+            Properties prop = new Properties();
+            prop.put("StrictHostKeyChecking", "no");
+            session.setConfig(prop);
+            session.connect();
+
+            ChannelExec channelssh = (ChannelExec) session.openChannel("exec");
+            channelssh.setOutputStream(baos);
+
+            channelssh.setCommand(command);
+            channelssh.connect();
+
+            byte[] buffer = new byte[1024];
+            try {
+                InputStream in = channelssh.getInputStream();
+                String line = "";
+                while (true) {
+                    while (in.available() > 0) {
+                        int i = in.read(buffer, 0, 1024);
+                        if (i < 0) {
+                            break;
+                        }
+                        line = new String(buffer, 0, i);
+                        Log.e("results: ", line);
+                    }
+
+                    if (line.contains("logout")) {
+                        break;
+                    }
+
+                    if (channelssh.isClosed()) {
+                        break;
+                    }
+                    try {
+                        Thread.sleep(1000);
+                    } catch (Exception ee) {
+                    }
+                }
+            } catch (Exception e) {
+                System.out.println("Error while reading channel output: " + e);
+            }
+            channelssh.disconnect();
+        }catch (Exception ee) {
+            Log.e("Error connecting.",ee.toString());
+        }
     }
 }
 

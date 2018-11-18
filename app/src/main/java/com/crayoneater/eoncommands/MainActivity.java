@@ -23,6 +23,8 @@ import android.widget.EditText;
 
 public class MainActivity extends Activity {
 
+    public int pingCount = 0;
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -78,11 +80,60 @@ public class MainActivity extends Activity {
         prepareCommand(command);
     }
 
+    public void cloneButton(View v)
+    {
+        EditText ipText = (EditText) findViewById(R.id.editText2);
+        final String com = ipText.getText().toString();
+        String command = "cd /data; rm -rf openpilot; git clone "+com;
+        prepareCommand(command);
+    }
+
+    public void checkoutButton(View v)
+    {
+        EditText ipText = (EditText) findViewById(R.id.editText3);
+        final String com = ipText.getText().toString();
+        String command = "cd /data/openpilot; git checkout "+com;
+        prepareCommand(command);
+    }
+
+    public void customButton(View v)
+    {
+        EditText ipText = (EditText) findViewById(R.id.editText4);
+        final String command = ipText.getText().toString();
+        prepareCommand(command);
+    }
+
+    public void ping(String ip)
+    {
+        Log.e("ping",ip);
+        Runtime runtime = Runtime.getRuntime();
+        try
+        {
+            for(int i = 0; i < 15; i++) {
+                Process mIpAddrProcess = runtime.exec("/system/bin/ping -n 1 " + ip);
+                int mExitValue = mIpAddrProcess.waitFor();
+                System.out.println(" mExitValue " + mExitValue);
+            }
+        }
+        catch (InterruptedException ignore)
+        {
+            ignore.printStackTrace();
+            System.out.println(" Exception:"+ignore);
+        }
+        catch (IOException e)
+        {
+            e.printStackTrace();
+            System.out.println(" Exception:"+e);
+        }
+    }
+
     @SuppressLint("StaticFieldLeak")
     public void prepareCommand(final String command)
     {
+        Log.e("command: ",command);
         EditText ipText = (EditText) findViewById(R.id.editText);
         final String ip = ipText.getText().toString();
+        ping(ip);
         Log.e("IP",ip);
         new AsyncTask<Integer, Void, Void>() {
             @Override

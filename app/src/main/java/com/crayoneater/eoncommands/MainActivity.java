@@ -7,24 +7,22 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.lang.ref.WeakReference;
 import java.util.Properties;
 
 import com.jcraft.jsch.ChannelExec;
 import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.Session;
 
-import android.annotation.SuppressLint;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.app.Activity;
 import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.Toast;
 
 public class MainActivity extends Activity {
-
-    public int pingCount = 0;
-
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -82,7 +80,7 @@ public class MainActivity extends Activity {
 
     public void cloneButton(View v)
     {
-        EditText ipText = (EditText) findViewById(R.id.editText2);
+        EditText ipText = findViewById(R.id.editText2);
         final String com = ipText.getText().toString();
         String command = "cd /data; rm -rf openpilot; git clone "+com;
         prepareCommand(command);
@@ -90,7 +88,7 @@ public class MainActivity extends Activity {
 
     public void checkoutButton(View v)
     {
-        EditText ipText = (EditText) findViewById(R.id.editText3);
+        EditText ipText = findViewById(R.id.editText3);
         final String com = ipText.getText().toString();
         String command = "cd /data/openpilot; git checkout "+com;
         prepareCommand(command);
@@ -98,7 +96,7 @@ public class MainActivity extends Activity {
 
     public void customButton(View v)
     {
-        EditText ipText = (EditText) findViewById(R.id.editText4);
+        EditText ipText = findViewById(R.id.editText4);
         final String command = ipText.getText().toString();
         prepareCommand(command);
     }
@@ -115,10 +113,10 @@ public class MainActivity extends Activity {
                 System.out.println(" mExitValue " + mExitValue);
             }
         }
-        catch (InterruptedException ignore)
+        catch (InterruptedException ee)
         {
-            ignore.printStackTrace();
-            System.out.println(" Exception:"+ignore);
+            ee.printStackTrace();
+            System.out.println(" Exception:"+ee);
         }
         catch (IOException e)
         {
@@ -127,33 +125,55 @@ public class MainActivity extends Activity {
         }
     }
 
-    @SuppressLint("StaticFieldLeak")
     public void prepareCommand(final String command)
     {
         Log.e("command: ",command);
-        EditText ipText = (EditText) findViewById(R.id.editText);
+        EditText ipText = findViewById(R.id.editText);
         final String ip = ipText.getText().toString();
+        final String key = getKey();
         ping(ip);
         Log.e("IP",ip);
-        new AsyncTask<Integer, Void, Void>() {
-            @Override
-            protected Void doInBackground(Integer... params) {
-                try {
-                    executeCommand("root", ip, 8022, command);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-                return null;
-            }
-        }.execute(1);
+        new MyTask(this,ip,command,key).execute();
     }
 
-    public void executeCommand(String username, String hostname, int port, String command)
+    private static class MyTask extends AsyncTask<Void, Void, String> {
+
+        private WeakReference<MainActivity> activityReference;
+        private String ip;
+        private String command;
+        private String key;
+        // only retain a weak reference to the activity
+        MyTask(MainActivity context,String ip,String command,String key) {
+            this.activityReference = new WeakReference<>(context);
+            this.ip = ip;
+            this.command = command;
+            this.key = key;
+        }
+
+        @Override
+        protected String doInBackground(Void... params) {
+
+            try {
+                executeCommand("root", this.ip, 8022, this.command, this.key);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            return "task finished";
+        }
+
+        @Override
+        protected void onPostExecute(String result) {
+            Activity activity = this.activityReference.get();
+            Toast.makeText(activity,"Command Sent: "+this.command,Toast.LENGTH_LONG).show();
+        }
+    }
+
+    public static void executeCommand(String username, String hostname, int port, String command, String key)
     {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         try {
             JSch jsch = new JSch();
-            jsch.addIdentity(getKey());
+            jsch.addIdentity(key);
             Session session = jsch.getSession(username, hostname, port);
             Properties prop = new Properties();
             prop.put("StrictHostKeyChecking", "no");
@@ -190,6 +210,7 @@ public class MainActivity extends Activity {
                     try {
                         Thread.sleep(1000);
                     } catch (Exception ee) {
+                        System.out.println("Error: "+ee);
                     }
                 }
             } catch (Exception e) {

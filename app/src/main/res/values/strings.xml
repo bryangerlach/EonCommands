@@ -1,3 +1,14 @@
 <resources>
     <string name="app_name">Eon Commands</string>
+    <string name="eon_ip_address">Eon IP Address:</string>
+    <string name="default_ip">192.168.86.30</string>
+    <string name="delete_drives">Delete Drives</string>
+    <string name="update_and_reboot">Update and Reboot</string>
+    <string name="open_adroid_settings">Open Adroid Settings</string>
+    <string name="git_clone">git clone:</string>
+    <string name="default_url">https://github.com/commaai/openpilot</string>
+    <string name="git_checkout">git checkout:</string>
+    <string name="devel">devel</string>
+    <string name="custom_command">Custom Command:</string>
+    <string name="default_custom">cd /data/openpilot; ls</string>
 </resources>

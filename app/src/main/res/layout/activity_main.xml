@@ -1,96 +1,104 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="vertical"
-    tools:context=".MainActivity">
-    <ScrollView
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content">
+<ScrollView xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="fill_parent"
+    android:layout_height="wrap_content"
+    xmlns:android="http://schemas.android.com/apk/res/android">
         <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-            xmlns:app="http://schemas.android.com/apk/res-auto"
             xmlns:tools="http://schemas.android.com/tools"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_height="wrap_content"
             android:orientation="vertical">
             <TextView
                 android:id="@+id/textView"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Eon IP Address:" />
+                android:text="@string/eon_ip_address" />
 
             <EditText
                 android:id="@+id/editText"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:ems="10"
-                android:inputType="number"
-                android:text="192.168.86.30" />
+                android:inputType="numberDecimal|numberSigned|textPersonName"
+                android:digits="0123456789."
+                android:text="@string/default_ip"
+                android:importantForAutofill="no"
+                tools:targetApi="o"
+                tools:ignore="LabelFor" />
 
             <Button
                 android:id="@+id/button3"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:onClick="deleteButton"
-                android:text="Delete Drives" />
+                android:text="@string/delete_drives" />
 
             <Button
                 android:id="@+id/button4"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:onClick="pullButton"
-                android:text="Update and Reboot" />
+                android:text="@string/update_and_reboot" />
 
             <Button
                 android:id="@+id/button"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:onClick="settingsButton"
-                android:text="Open Adroid Settings" />
+                android:text="@string/open_adroid_settings" />
 
             <Button
                 android:id="@+id/button2"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:onClick="cloneButton"
-                android:text="git clone:" />
+                android:text="@string/git_clone" />
 
             <EditText
                 android:id="@+id/editText2"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:ems="10"
-                android:text="https://github.com/commaai/openpilot" />
+                android:text="@string/default_url"
+                android:importantForAutofill="no"
+                android:inputType="text"
+                tools:ignore="LabelFor"
+                tools:targetApi="o" />
 
             <Button
                 android:id="@+id/button5"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:onClick="checkoutButton"
-                android:text="git checkout:" />
+                android:text="@string/git_checkout" />
 
             <EditText
                 android:id="@+id/editText3"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:ems="10"
-                android:text="devel" />
+                android:text="@string/devel"
+                android:importantForAutofill="no"
+                android:inputType="text"
+                tools:ignore="LabelFor"
+                tools:targetApi="o"/>
 
             <Button
                 android:id="@+id/button6"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:onClick="customButton"
-                android:text="Custom Command:" />
+                android:text="@string/custom_command" />
 
             <EditText
                 android:id="@+id/editText4"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:ems="10"
-                android:text="cd /data/openpilot; ls" />
+                android:text="@string/default_custom"
+                android:importantForAutofill="no"
+                android:inputType="text"
+                tools:ignore="LabelFor"
+                tools:targetApi="o"/>
         </LinearLayout>
     </ScrollView>
-</LinearLayout>

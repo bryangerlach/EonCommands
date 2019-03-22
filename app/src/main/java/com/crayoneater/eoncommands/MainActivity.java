@@ -27,9 +27,11 @@ import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.Session;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.app.Activity;
+import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
@@ -37,11 +39,25 @@ import android.widget.Toast;
 
 public class MainActivity extends Activity {
     private static EditText ipText1;
+    private SharedPreferences getPrefs;
+    String ipKey = "com.crayoneater.eoncommands.ip";
+    String cloneKey = "com.crayoneater.eoncommands.clone";
+    String checkoutKey = "com.crayoneater.eoncommands.checkout";
+    String customKey = "com.crayoneater.eoncommands.custom";
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        getPrefs = PreferenceManager
+                .getDefaultSharedPreferences(getBaseContext());
         setContentView(R.layout.activity_main);
-        ipText1 = findViewById(R.id.editText);
+        ipText1 = findViewById(R.id.edit_text_ip);
+        ipText1.setText(getPrefs.getString(ipKey,""));
+        EditText cloneText = findViewById(R.id.edit_text_clone);
+        cloneText.setText(getPrefs.getString(cloneKey,"https://github.com/commaai/openpilot.git"));
+        EditText checkoutText = findViewById(R.id.edit_text_checkout);
+        checkoutText.setText(getPrefs.getString(checkoutKey,"devel"));
+        EditText customText = findViewById(R.id.edit_text_custom);
+        customText.setText(getPrefs.getString(customKey,"cd /data/openpilot; git pull; reboot"));
     }
 
     private String getKey()
@@ -95,24 +111,27 @@ public class MainActivity extends Activity {
 
     public void cloneButton(View v)
     {
-        EditText ipText = findViewById(R.id.editText2);
+        EditText ipText = findViewById(R.id.edit_text_clone);
         final String com = ipText.getText().toString();
+        getPrefs.edit().putString(cloneKey,com).apply();
         String command = "cd /data; rm -rf openpilot; git clone "+com;
         prepareCommand(command);
     }
 
     public void checkoutButton(View v)
     {
-        EditText ipText = findViewById(R.id.editText3);
+        EditText ipText = findViewById(R.id.edit_text_checkout);
         final String com = ipText.getText().toString();
+        getPrefs.edit().putString(checkoutKey,com).apply();
         String command = "cd /data/openpilot; git checkout "+com;
         prepareCommand(command);
     }
 
     public void customButton(View v)
     {
-        EditText ipText = findViewById(R.id.editText4);
+        EditText ipText = findViewById(R.id.edit_text_custom);
         final String command = ipText.getText().toString();
+        getPrefs.edit().putString(customKey,command).apply();
         prepareCommand(command);
 
     }
@@ -144,8 +163,9 @@ public class MainActivity extends Activity {
     public void prepareCommand(final String command)
     {
         Log.e("command: ",command);
-        EditText ipText = findViewById(R.id.editText);
+        EditText ipText = findViewById(R.id.edit_text_ip);
         final String ip = ipText.getText().toString();
+        getPrefs.edit().putString(ipKey,ip).apply();
         final String key = getKey();
         ping(ip);
         Log.e("IP",ip);
@@ -280,7 +300,13 @@ public class MainActivity extends Activity {
                 e.printStackTrace();
             }
         }
-        System.out.println("There are " + openPorts + " open ports on host " + ip + " (probed with a timeout of " + timeout + "ms)");
+        if (openPorts > 0)
+        {
+            Toast.makeText(this,"EON found!",Toast.LENGTH_LONG).show();
+        } else
+        {
+            Toast.makeText(this,"No EONs found.",Toast.LENGTH_LONG).show();
+        }
     }
 
     public static String getIPAddress() {
@@ -292,7 +318,6 @@ public class MainActivity extends Activity {
                     if (!addr.isLoopbackAddress()) {
                         String sAddr = addr.getHostAddress();
                         boolean isIPv4 = sAddr.indexOf(':')<0;
-
                         if (isIPv4) {return sAddr;}
                     }
                 }

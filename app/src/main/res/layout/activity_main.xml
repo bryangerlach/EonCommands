@@ -14,17 +14,32 @@
                 android:layout_height="wrap_content"
                 android:text="@string/eon_ip_address" />
 
-            <EditText
-                android:id="@+id/editText"
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:ems="10"
-                android:inputType="numberDecimal|numberSigned|textPersonName"
-                android:digits="0123456789."
-                android:text="@string/default_ip"
-                android:importantForAutofill="no"
-                tools:targetApi="o"
-                tools:ignore="LabelFor" />
+                android:orientation="horizontal">
+
+                <EditText
+                    android:id="@+id/editText"
+                    android:layout_width="0dp"
+                    android:layout_weight=".70"
+                    android:layout_height="wrap_content"
+                    android:digits="0123456789."
+                    android:ems="10"
+                    android:importantForAutofill="no"
+                    android:inputType="numberDecimal|numberSigned|textPersonName"
+                    android:text="@string/default_ip"
+                    tools:ignore="LabelFor"
+                    tools:targetApi="o" />
+
+                <Button
+                    android:id="@+id/button7"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight=".30"
+                    android:onClick="scanNetwork"
+                    android:text="Scan" />
+            </LinearLayout>
 
             <Button
                 android:id="@+id/button3"

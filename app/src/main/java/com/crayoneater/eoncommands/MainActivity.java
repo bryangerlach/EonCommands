@@ -8,12 +8,25 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.lang.ref.WeakReference;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.net.NetworkInterface;
+import java.net.Socket;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Properties;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 import com.jcraft.jsch.ChannelExec;
 import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.Session;
 
+import android.content.Context;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.app.Activity;
@@ -23,10 +36,12 @@ import android.widget.EditText;
 import android.widget.Toast;
 
 public class MainActivity extends Activity {
+    private static EditText ipText1;
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        ipText1 = findViewById(R.id.editText);
     }
 
     private String getKey()
@@ -99,6 +114,7 @@ public class MainActivity extends Activity {
         EditText ipText = findViewById(R.id.editText4);
         final String command = ipText.getText().toString();
         prepareCommand(command);
+
     }
 
     public void ping(String ip)
@@ -220,6 +236,69 @@ public class MainActivity extends Activity {
         }catch (Exception ee) {
             Log.e("Error connecting.",ee.toString());
         }
+    }
+
+    public static Future<String> portIsOpen(final ExecutorService es, final String ip, final int port, final int timeout) {
+        return es.submit(new Callable<String>() {
+            @Override public String call() {
+                try {
+                    Socket socket = new Socket();
+                    socket.connect(new InetSocketAddress(ip, port), timeout);
+                    socket.close();
+
+                    Log.e("EON detected: ",""+ip);
+                    ipText1.setText(ip);
+                    return ip;
+                } catch (Exception ex) {
+                    Log.e("NO: ",""+ip);
+                    return null;
+                }
+            }
+        });
+    }
+
+    public void scanNetwork(View v) {
+        final ExecutorService es = Executors.newFixedThreadPool(20);
+        final String fullIp = getIPAddress();
+        //final String fullIp = "192.168.86.16";
+        final String ip = fullIp.substring(0,fullIp.lastIndexOf('.'));
+        final int timeout = 800;
+        final List<Future<String>> futures = new ArrayList<>();
+        for (int ipr = 0; ipr <= 255; ipr++) {
+            futures.add(portIsOpen(es, ip+"."+ipr, 8022, timeout));
+        }
+        es.shutdown();
+        int openPorts = 0;
+        for (final Future<String> f : futures) {
+            try {
+                if (f.get() != null) {
+                    openPorts++;
+                }
+            } catch (ExecutionException e) {
+                e.printStackTrace();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+        System.out.println("There are " + openPorts + " open ports on host " + ip + " (probed with a timeout of " + timeout + "ms)");
+    }
+
+    public static String getIPAddress() {
+        try {
+            List<NetworkInterface> interfaces = Collections.list(NetworkInterface.getNetworkInterfaces());
+            for (NetworkInterface intf : interfaces) {
+                List<InetAddress> addrs = Collections.list(intf.getInetAddresses());
+                for (InetAddress addr : addrs) {
+                    if (!addr.isLoopbackAddress()) {
+                        String sAddr = addr.getHostAddress();
+                        boolean isIPv4 = sAddr.indexOf(':')<0;
+
+                        if (isIPv4) {return sAddr;}
+                    }
+                }
+            }
+        } catch (Exception ignored) { } // for now eat exceptions
+        return "";
     }
 }
 
